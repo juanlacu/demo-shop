@@ -5,44 +5,36 @@ escritos como los escribiría un compañero: no mencionan el error.
 
 ## `demo/security`
 
-**Título:** Mostrar reseñas con formato
+**Title:** Show reviews with basic formatting
 
-> Los clientes nos pidieron poder resaltar partes de su reseña. Ahora
-> `**texto**` se muestra en negrita y los saltos de línea se respetan.
+> Customers asked to be able to highlight parts of their reviews. `**text**` now renders in bold and line breaks are kept.
 
 ## `demo/server-action`
 
-**Título:** Respetar en el checkout el precio que vio el cliente
+**Title:** Charge the price the customer saw when adding to the cart
 
-> Si un precio cambia mientras alguien tiene el producto en el carrito, hoy le
-> cobramos el precio nuevo. Guardamos el precio al agregar al carrito y el
-> checkout usa ese. De paso, el checkout ya no necesita buscar cada producto en
-> el catálogo.
+> If a price changes while a product sits in someone's cart, we currently charge the new price. The cart now stores the price when the product is added and checkout uses it. As a bonus, checkout no longer needs to look up every product in the catalog.
 
 ## `demo/correctness`
 
-**Título:** Envío gratis desde $50.000
+**Title:** Free shipping on orders from $50.000
 
-> Promo de este mes: envío gratis en compras desde $50.000. El carrito muestra
-> cuánto falta para llegar.
+> This month's promo: free shipping on orders from $50.000. The cart shows how much is left to qualify.
 
 ## `demo/cross-file`
 
-**Título:** `formatPrice` recibe centavos
+**Title:** `formatPrice` takes cents
 
-> La API de pagos que vamos a integrar trabaja en centavos. `formatPrice` pasa a
-> recibir centavos y el carrito se adapta. Aprovecho para que `PriceTag` pueda
-> mostrar un precio anterior tachado.
+> The payments API we're about to integrate works in cents. `formatPrice` now takes cents and the cart is updated accordingly. I also let `PriceTag` show a crossed-out previous price.
 
 ## `demo/test-gap`
 
-**Título:** Cupones de descuento
+**Title:** Add discount coupons
 
-> Se puede ingresar un cupón en el carrito. Arrancamos con `MATE10` (10 %) y
-> `BIENVENIDA` ($5.000 de descuento).
+> Customers can enter a coupon in the cart. We're starting with `MATE10` (10% off) and `BIENVENIDA` ($5.000 off).
 
 ## `demo/clean`
 
-**Título:** Mejorar textos del catálogo y el carrito
+**Title:** Polish catalog and cart copy
 
-> Ajustes de copy que pidió marketing.
+> Copy tweaks requested by marketing.
