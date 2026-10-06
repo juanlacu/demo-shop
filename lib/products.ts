@@ -24,7 +24,7 @@ const PRODUCTS: Product[] = [
     description: "Calabaza curada a mano con virola de alpaca.",
     price: 18_500,
     reviews: [
-      { author: "Lucía", rating: 5, text: "Llegó curado y listo para usar." },
+      { author: "Lucía", rating: 5, text: "Llegó **curado** y listo para usar." },
       { author: "Martín", rating: 4, text: "Muy lindo, un poco más chico de lo que esperaba." },
     ],
   },
@@ -43,7 +43,7 @@ const PRODUCTS: Product[] = [
     description: "Mantiene el agua caliente 24 horas. Pico cebador incluido.",
     price: 42_000,
     reviews: [
-      { author: "Diego", rating: 5, text: "Lo uso todos los días, impecable." },
+      { author: "Diego", rating: 5, text: "Lo uso todos los días.\n**Impecable.**" },
       { author: "Carla", rating: 3, text: "Bueno, pero la tapa cierra un poco dura." },
     ],
   },
