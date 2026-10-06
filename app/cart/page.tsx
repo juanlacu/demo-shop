@@ -34,7 +34,7 @@ export default function CartPage() {
         <p>
           Pedido <strong>#{result.orderId}</strong> por {formatPrice(result.total)}.
         </p>
-        <Link href="/">Seguir comprando</Link>
+        <Link href="/">Volver a la tienda</Link>
       </div>
     );
   }
@@ -44,7 +44,7 @@ export default function CartPage() {
       <>
         <h1>Carrito</h1>
         <p className="muted">
-          Tu carrito está vacío. <Link href="/">Ver el catálogo</Link>
+          Todavía no agregaste nada. <Link href="/">Mirá el catálogo</Link>
         </p>
       </>
     );

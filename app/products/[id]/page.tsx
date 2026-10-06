@@ -24,7 +24,7 @@ export default async function ProductPage({ params }: Props) {
 
       <h2>Reseñas</h2>
       {product.reviews.length === 0 ? (
-        <p className="muted">Todavía no hay reseñas.</p>
+        <p className="muted">Sé el primero en dejar una reseña.</p>
       ) : (
         <ul className="reviews">
           {product.reviews.map((review, index) => (

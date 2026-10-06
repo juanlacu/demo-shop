@@ -11,13 +11,13 @@ export default async function CatalogPage({ searchParams }: Props) {
 
   return (
     <>
-      <h1>Catálogo</h1>
+      <h1>Todo para tu mate</h1>
       <form className="search" action="/">
         <input name="q" defaultValue={q} placeholder="Buscar mates, termos, yerba…" aria-label="Buscar" />
         <button type="submit">Buscar</button>
       </form>
       {products.length === 0 ? (
-        <p className="muted">No hay productos para “{q}”.</p>
+        <p className="muted">No encontramos nada para “{q}”. Probá con otra palabra.</p>
       ) : (
         <ul className="grid">
           {products.map((product) => (

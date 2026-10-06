@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Mateando",
-  description: "Tienda demo para probar Jev Review.",
+  description: "Todo para tu mate, con envío a todo el país.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
