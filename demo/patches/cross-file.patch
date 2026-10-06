@@ -1,0 +1,144 @@
+From 9ea6863ac8a5ef724d5168a6a4649b2653653ee3 Mon Sep 17 00:00:00 2001
+From: Juan Andres <juanlacu@gmail.com>
+Date: Tue, 6 Oct 2026 17:18:13 -0300
+Subject: [PATCH] Format prices from cents and show sale prices
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ app/cart/page.tsx          | 10 +++++-----
+ app/products/[id]/page.tsx |  2 +-
+ components/PriceTag.tsx    | 16 ++++++++++++++--
+ lib/pricing.ts             |  5 +++--
+ lib/products.ts            |  3 +++
+ test/pricing.test.ts       |  4 ++--
+ 6 files changed, 28 insertions(+), 12 deletions(-)
+
+diff --git a/app/cart/page.tsx b/app/cart/page.tsx
+index 6d0d108..4b70ec1 100644
+--- a/app/cart/page.tsx
++++ b/app/cart/page.tsx
+@@ -32,7 +32,7 @@ export default function CartPage() {
+       <div className="notice">
+         <h1>¡Gracias por tu compra!</h1>
+         <p>
+-          Pedido <strong>#{result.orderId}</strong> por {formatPrice(result.total)}.
++          Pedido <strong>#{result.orderId}</strong> por {formatPrice(result.total * 100)}.
+         </p>
+         <Link href="/">Seguir comprando</Link>
+       </div>
+@@ -67,7 +67,7 @@ export default function CartPage() {
+                   Quitar
+                 </button>
+               </span>
+-              <span>{formatPrice(product.price * line.quantity)}</span>
++              <span>{formatPrice(product.price * line.quantity * 100)}</span>
+             </li>
+           );
+         })}
+@@ -76,15 +76,15 @@ export default function CartPage() {
+       <div className="totals">
+         <div>
+           <span>Subtotal</span>
+-          <span>{formatPrice(totals.subtotal)}</span>
++          <span>{formatPrice(totals.subtotal * 100)}</span>
+         </div>
+         <div>
+           <span>Envío</span>
+-          <span>{totals.shipping === 0 ? "Gratis" : formatPrice(totals.shipping)}</span>
++          <span>{totals.shipping === 0 ? "Gratis" : formatPrice(totals.shipping * 100)}</span>
+         </div>
+         <div className="total">
+           <span>Total</span>
+-          <span>{formatPrice(totals.total)}</span>
++          <span>{formatPrice(totals.total * 100)}</span>
+         </div>
+       </div>
+ 
+diff --git a/app/products/[id]/page.tsx b/app/products/[id]/page.tsx
+index 57320c5..8ef6b69 100644
+--- a/app/products/[id]/page.tsx
++++ b/app/products/[id]/page.tsx
+@@ -18,7 +18,7 @@ export default async function ProductPage({ params }: Props) {
+       <h1>{product.name}</h1>
+       <p className="muted">{product.description}</p>
+       <p>
+-        <PriceTag amount={product.price} />
++        <PriceTag amount={product.price} compareAt={product.listPrice} />
+       </p>
+       <AddToCartButton productId={product.id} />
+ 
+diff --git a/components/PriceTag.tsx b/components/PriceTag.tsx
+index 676dd60..ddefdbb 100644
+--- a/components/PriceTag.tsx
++++ b/components/PriceTag.tsx
+@@ -1,5 +1,17 @@
+ import { formatPrice } from "@/lib/pricing";
+ 
+-export function PriceTag({ amount }: { amount: number }) {
+-  return <span className="price">{formatPrice(amount)}</span>;
++type Props = {
++  amount: number;
++  compareAt?: number;
++};
++
++export function PriceTag({ amount, compareAt }: Props) {
++  return (
++    <span className="price">
++      {compareAt !== undefined && compareAt > amount && (
++        <s className="muted">{formatPrice(compareAt)}</s>
++      )}{" "}
++      {formatPrice(amount)}
++    </span>
++  );
+ }
+diff --git a/lib/pricing.ts b/lib/pricing.ts
+index 73e07b4..62728bb 100644
+--- a/lib/pricing.ts
++++ b/lib/pricing.ts
+@@ -31,6 +31,7 @@ const PESOS = new Intl.NumberFormat("es-AR", {
+   maximumFractionDigits: 0,
+ });
+ 
+-export function formatPrice(amount: number): string {
+-  return PESOS.format(amount);
++// Takes cents, like the payments API.
++export function formatPrice(cents: number): string {
++  return PESOS.format(cents / 100);
+ }
+diff --git a/lib/products.ts b/lib/products.ts
+index e31251d..dfd0597 100644
+--- a/lib/products.ts
++++ b/lib/products.ts
+@@ -13,6 +13,8 @@ export type Product = {
+   emoji: string;
+   description: string;
+   price: number;
++  // Previous price, shown crossed out when the product is on sale.
++  listPrice?: number;
+   reviews: Review[];
+ };
+ 
+@@ -42,6 +44,7 @@ const PRODUCTS: Product[] = [
+     emoji: "🫖",
+     description: "Mantiene el agua caliente 24 horas. Pico cebador incluido.",
+     price: 42_000,
++    listPrice: 48_000,
+     reviews: [
+       { author: "Diego", rating: 5, text: "Lo uso todos los días, impecable." },
+       { author: "Carla", rating: 3, text: "Bueno, pero la tapa cierra un poco dura." },
+diff --git a/test/pricing.test.ts b/test/pricing.test.ts
+index fc880ad..345d99b 100644
+--- a/test/pricing.test.ts
++++ b/test/pricing.test.ts
+@@ -20,6 +20,6 @@ test("rejects products that are not in the catalog", () => {
+   assert.throws(() => quote([{ productId: "nope", quantity: 1 }]), /Unknown product/);
+ });
+ 
+-test("formats whole pesos", () => {
+-  assert.match(formatPrice(18_500), /^\$\s?18\.500$/);
++test("formats cents as whole pesos", () => {
++  assert.match(formatPrice(1_850_000), /^\$\s?18\.500$/);
+ });
+-- 
+2.50.1 (Apple Git-155)
+

@@ -1,0 +1,84 @@
+From 5884e4f8e2945990740ba7cdefbb021ec88a657b Mon Sep 17 00:00:00 2001
+From: Juan Andres <juanlacu@gmail.com>
+Date: Tue, 6 Oct 2026 17:18:41 -0300
+Subject: [PATCH] Polish catalog and cart copy
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ app/cart/page.tsx          | 4 ++--
+ app/layout.tsx             | 2 +-
+ app/page.tsx               | 4 ++--
+ app/products/[id]/page.tsx | 2 +-
+ 4 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/app/cart/page.tsx b/app/cart/page.tsx
+index 6d0d108..81edbae 100644
+--- a/app/cart/page.tsx
++++ b/app/cart/page.tsx
+@@ -34,7 +34,7 @@ export default function CartPage() {
+         <p>
+           Pedido <strong>#{result.orderId}</strong> por {formatPrice(result.total)}.
+         </p>
+-        <Link href="/">Seguir comprando</Link>
++        <Link href="/">Volver a la tienda</Link>
+       </div>
+     );
+   }
+@@ -44,7 +44,7 @@ export default function CartPage() {
+       <>
+         <h1>Carrito</h1>
+         <p className="muted">
+-          Tu carrito está vacío. <Link href="/">Ver el catálogo</Link>
++          Todavía no agregaste nada. <Link href="/">Mirá el catálogo</Link>
+         </p>
+       </>
+     );
+diff --git a/app/layout.tsx b/app/layout.tsx
+index d543242..130b2bb 100644
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -6,7 +6,7 @@ import "./globals.css";
+ 
+ export const metadata: Metadata = {
+   title: "Mateando",
+-  description: "Tienda demo para probar Jev Review.",
++  description: "Todo para tu mate, con envío a todo el país.",
+ };
+ 
+ export default function RootLayout({ children }: { children: ReactNode }) {
+diff --git a/app/page.tsx b/app/page.tsx
+index 0cb499c..a97f129 100644
+--- a/app/page.tsx
++++ b/app/page.tsx
+@@ -11,13 +11,13 @@ export default async function CatalogPage({ searchParams }: Props) {
+ 
+   return (
+     <>
+-      <h1>Catálogo</h1>
++      <h1>Todo para tu mate</h1>
+       <form className="search" action="/">
+         <input name="q" defaultValue={q} placeholder="Buscar mates, termos, yerba…" aria-label="Buscar" />
+         <button type="submit">Buscar</button>
+       </form>
+       {products.length === 0 ? (
+-        <p className="muted">No hay productos para “{q}”.</p>
++        <p className="muted">No encontramos nada para “{q}”. Probá con otra palabra.</p>
+       ) : (
+         <ul className="grid">
+           {products.map((product) => (
+diff --git a/app/products/[id]/page.tsx b/app/products/[id]/page.tsx
+index 57320c5..d2e0606 100644
+--- a/app/products/[id]/page.tsx
++++ b/app/products/[id]/page.tsx
+@@ -24,7 +24,7 @@ export default async function ProductPage({ params }: Props) {
+ 
+       <h2>Reseñas</h2>
+       {product.reviews.length === 0 ? (
+-        <p className="muted">Todavía no hay reseñas.</p>
++        <p className="muted">Sé el primero en dejar una reseña.</p>
+       ) : (
+         <ul className="reviews">
+           {product.reviews.map((review, index) => (
+-- 
+2.50.1 (Apple Git-155)
+

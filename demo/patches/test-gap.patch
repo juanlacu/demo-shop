@@ -1,0 +1,183 @@
+From d6cf49bc395239462e0c7da96e71e101b39a1bcd Mon Sep 17 00:00:00 2001
+From: Juan Andres <juanlacu@gmail.com>
+Date: Tue, 6 Oct 2026 17:18:34 -0300
+Subject: [PATCH] Add discount coupons
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ app/cart/page.tsx       | 24 +++++++++++++++++++++---
+ app/checkout/actions.ts | 10 +++++++---
+ lib/pricing.ts          | 30 ++++++++++++++++++++++++++++--
+ test/pricing.test.ts    |  2 +-
+ 4 files changed, 57 insertions(+), 9 deletions(-)
+
+diff --git a/app/cart/page.tsx b/app/cart/page.tsx
+index 6d0d108..5c7f0a6 100644
+--- a/app/cart/page.tsx
++++ b/app/cart/page.tsx
+@@ -4,11 +4,12 @@ import Link from "next/link";
+ import { useEffect, useState, useTransition } from "react";
+ import { checkout, type CheckoutResult } from "@/app/checkout/actions";
+ import { CART_EVENT, clearCart, readCart, removeFromCart } from "@/lib/cart";
+-import { formatPrice, quote, type CartLine } from "@/lib/pricing";
++import { formatPrice, isValidCoupon, quote, type CartLine } from "@/lib/pricing";
+ import { getProduct } from "@/lib/products";
+ 
+ export default function CartPage() {
+   const [lines, setLines] = useState<CartLine[]>([]);
++  const [coupon, setCoupon] = useState("");
+   const [result, setResult] = useState<CheckoutResult | null>(null);
+   const [pending, startTransition] = useTransition();
+ 
+@@ -21,7 +22,7 @@ export default function CartPage() {
+ 
+   function confirm() {
+     startTransition(async () => {
+-      const outcome = await checkout(lines);
++      const outcome = await checkout(lines, coupon);
+       setResult(outcome);
+       if (outcome.ok) clearCart();
+     });
+@@ -50,7 +51,8 @@ export default function CartPage() {
+     );
+   }
+ 
+-  const totals = quote(lines);
++  const totals = quote(lines, coupon);
++  const invalidCoupon = coupon.trim() !== "" && !isValidCoupon(coupon);
+ 
+   return (
+     <>
+@@ -73,11 +75,27 @@ export default function CartPage() {
+         })}
+       </ul>
+ 
++      <div className="search">
++        <input
++          value={coupon}
++          onChange={(event) => setCoupon(event.target.value)}
++          placeholder="Cupón de descuento"
++          aria-label="Cupón de descuento"
++        />
++      </div>
++      {invalidCoupon && <p className="error">Ese cupón no existe.</p>}
++
+       <div className="totals">
+         <div>
+           <span>Subtotal</span>
+           <span>{formatPrice(totals.subtotal)}</span>
+         </div>
++        {totals.discount > 0 && (
++          <div>
++            <span>Descuento</span>
++            <span>−{formatPrice(totals.discount)}</span>
++          </div>
++        )}
+         <div>
+           <span>Envío</span>
+           <span>{totals.shipping === 0 ? "Gratis" : formatPrice(totals.shipping)}</span>
+diff --git a/app/checkout/actions.ts b/app/checkout/actions.ts
+index fedcc90..99484db 100644
+--- a/app/checkout/actions.ts
++++ b/app/checkout/actions.ts
+@@ -1,7 +1,7 @@
+ "use server";
+ 
+ import { randomUUID } from "node:crypto";
+-import { quote, type CartLine } from "@/lib/pricing";
++import { isValidCoupon, quote, type CartLine } from "@/lib/pricing";
+ 
+ export type CheckoutResult =
+   | { ok: true; orderId: string; total: number }
+@@ -9,7 +9,7 @@ export type CheckoutResult =
+ 
+ // The client only sends product ids and quantities. The total is always
+ // recalculated here from catalog prices.
+-export async function checkout(lines: CartLine[]): Promise<CheckoutResult> {
++export async function checkout(lines: CartLine[], couponCode = ""): Promise<CheckoutResult> {
+   if (lines.length === 0) {
+     return { ok: false, error: "El carrito está vacío." };
+   }
+@@ -17,8 +17,12 @@ export async function checkout(lines: CartLine[]): Promise<CheckoutResult> {
+     return { ok: false, error: "Hay cantidades inválidas en el carrito." };
+   }
+ 
++  if (couponCode.trim() && !isValidCoupon(couponCode)) {
++    return { ok: false, error: "El cupón no existe." };
++  }
++
+   try {
+-    const { total } = quote(lines);
++    const { total } = quote(lines, couponCode);
+     return { ok: true, orderId: randomUUID().slice(0, 8), total };
+   } catch {
+     return { ok: false, error: "Algún producto del carrito ya no está disponible." };
+diff --git a/lib/pricing.ts b/lib/pricing.ts
+index 73e07b4..c99d2cc 100644
+--- a/lib/pricing.ts
++++ b/lib/pricing.ts
+@@ -9,20 +9,46 @@ export type CartLine = {
+   quantity: number;
+ };
+ 
++type Coupon = { kind: "percent"; value: number } | { kind: "fixed"; value: number };
++
++const COUPONS: Record<string, Coupon> = {
++  MATE10: { kind: "percent", value: 10 },
++  BIENVENIDA: { kind: "fixed", value: 5_000 },
++};
++
++function findCoupon(code: string): Coupon | undefined {
++  const key = code.trim().toUpperCase();
++  return Object.hasOwn(COUPONS, key) ? COUPONS[key] : undefined;
++}
++
++export function isValidCoupon(code: string): boolean {
++  return findCoupon(code) !== undefined;
++}
++
++function discountFor(subtotal: number, code: string): number {
++  const coupon = findCoupon(code);
++  if (!coupon) return 0;
++  const amount =
++    coupon.kind === "percent" ? Math.round((subtotal * coupon.value) / 100) : coupon.value;
++  return Math.min(amount, subtotal);
++}
++
+ export type Quote = {
+   subtotal: number;
++  discount: number;
+   shipping: number;
+   total: number;
+ };
+ 
+-export function quote(lines: CartLine[]): Quote {
++export function quote(lines: CartLine[], couponCode = ""): Quote {
+   const subtotal = lines.reduce((sum, line) => {
+     const product = getProduct(line.productId);
+     if (!product) throw new Error(`Unknown product: ${line.productId}`);
+     return sum + product.price * line.quantity;
+   }, 0);
++  const discount = discountFor(subtotal, couponCode);
+   const shipping = subtotal === 0 ? 0 : SHIPPING_COST;
+-  return { subtotal, shipping, total: subtotal + shipping };
++  return { subtotal, discount, shipping, total: subtotal - discount + shipping };
+ }
+ 
+ const PESOS = new Intl.NumberFormat("es-AR", {
+diff --git a/test/pricing.test.ts b/test/pricing.test.ts
+index fc880ad..566ca17 100644
+--- a/test/pricing.test.ts
++++ b/test/pricing.test.ts
+@@ -3,7 +3,7 @@ import { test } from "node:test";
+ import { SHIPPING_COST, formatPrice, quote } from "../lib/pricing.ts";
+ 
+ test("an empty cart costs nothing", () => {
+-  assert.deepEqual(quote([]), { subtotal: 0, shipping: 0, total: 0 });
++  assert.deepEqual(quote([]), { subtotal: 0, discount: 0, shipping: 0, total: 0 });
+ });
+ 
+ test("quotes catalog prices times quantity plus shipping", () => {
+-- 
+2.50.1 (Apple Git-155)
+

@@ -1,0 +1,82 @@
+From db9e5c65efcb2a87aa6eeef743114a6e1af27ae0 Mon Sep 17 00:00:00 2001
+From: Juan Andres <juanlacu@gmail.com>
+Date: Tue, 6 Oct 2026 17:18:00 -0300
+Subject: [PATCH] Free shipping on orders from $50.000
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ app/cart/page.tsx    | 10 +++++++++-
+ lib/pricing.ts       |  4 +++-
+ test/pricing.test.ts |  6 ++++++
+ 3 files changed, 18 insertions(+), 2 deletions(-)
+
+diff --git a/app/cart/page.tsx b/app/cart/page.tsx
+index 6d0d108..ca329e0 100644
+--- a/app/cart/page.tsx
++++ b/app/cart/page.tsx
+@@ -4,7 +4,7 @@ import Link from "next/link";
+ import { useEffect, useState, useTransition } from "react";
+ import { checkout, type CheckoutResult } from "@/app/checkout/actions";
+ import { CART_EVENT, clearCart, readCart, removeFromCart } from "@/lib/cart";
+-import { formatPrice, quote, type CartLine } from "@/lib/pricing";
++import { FREE_SHIPPING_FROM, formatPrice, quote, type CartLine } from "@/lib/pricing";
+ import { getProduct } from "@/lib/products";
+ 
+ export default function CartPage() {
+@@ -73,6 +73,14 @@ export default function CartPage() {
+         })}
+       </ul>
+ 
++      {totals.subtotal < FREE_SHIPPING_FROM ? (
++        <p className="notice">
++          Te faltan {formatPrice(FREE_SHIPPING_FROM - totals.subtotal)} para el envío gratis.
++        </p>
++      ) : (
++        <p className="notice">¡Tu compra tiene envío gratis!</p>
++      )}
++
+       <div className="totals">
+         <div>
+           <span>Subtotal</span>
+diff --git a/lib/pricing.ts b/lib/pricing.ts
+index 73e07b4..379aeda 100644
+--- a/lib/pricing.ts
++++ b/lib/pricing.ts
+@@ -3,6 +3,8 @@
+ import { getProduct } from "./products.ts";
+ 
+ export const SHIPPING_COST = 4_500;
++// Promo: free shipping on orders from $50.000.
++export const FREE_SHIPPING_FROM = 50_000;
+ 
+ export type CartLine = {
+   productId: string;
+@@ -21,7 +23,7 @@ export function quote(lines: CartLine[]): Quote {
+     if (!product) throw new Error(`Unknown product: ${line.productId}`);
+     return sum + product.price * line.quantity;
+   }, 0);
+-  const shipping = subtotal === 0 ? 0 : SHIPPING_COST;
++  const shipping = subtotal === 0 || subtotal > FREE_SHIPPING_FROM ? 0 : SHIPPING_COST;
+   return { subtotal, shipping, total: subtotal + shipping };
+ }
+ 
+diff --git a/test/pricing.test.ts b/test/pricing.test.ts
+index fc880ad..9a0c7f4 100644
+--- a/test/pricing.test.ts
++++ b/test/pricing.test.ts
+@@ -16,6 +16,12 @@ test("quotes catalog prices times quantity plus shipping", () => {
+   assert.equal(result.total, result.subtotal + SHIPPING_COST);
+ });
+ 
++test("shipping is free on large orders", () => {
++  const result = quote([{ productId: "termo-acero", quantity: 2 }]);
++  assert.equal(result.shipping, 0);
++  assert.equal(result.total, 84_000);
++});
++
+ test("rejects products that are not in the catalog", () => {
+   assert.throws(() => quote([{ productId: "nope", quantity: 1 }]), /Unknown product/);
+ });
+-- 
+2.50.1 (Apple Git-155)
+
