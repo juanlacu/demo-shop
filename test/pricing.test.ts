@@ -20,6 +20,6 @@ test("rejects products that are not in the catalog", () => {
   assert.throws(() => quote([{ productId: "nope", quantity: 1 }]), /Unknown product/);
 });
 
-test("formats whole pesos", () => {
-  assert.match(formatPrice(18_500), /^\$\s?18\.500$/);
+test("formats cents as whole pesos", () => {
+  assert.match(formatPrice(1_850_000), /^\$\s?18\.500$/);
 });
