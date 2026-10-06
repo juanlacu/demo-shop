@@ -1,39 +1,39 @@
-# Mateando · demo de Jev Review
+# Mateando · Jev Review demo
 
-Una tienda mínima en Next.js armada para mostrar
-[Jev Review](https://github.com/juanlacu/jev-review): una GitHub Action que
-revisa cada pull request con [TypeSafe Jev](https://typesafe.ai) y deja los
-hallazgos como comentarios en la línea exacta del código.
+A minimal Next.js shop built to show
+[Jev Review](https://github.com/juanlacu/jev-review): a GitHub Action that
+reviews every pull request with [TypeSafe Jev](https://typesafe.ai) and posts
+its findings as comments on the exact line of code.
 
-La app es a propósito simple (catálogo, detalle, carrito y checkout) para que
-la atención quede en la revisión, no en el dominio. Las ramas `demo/*` traen
-cambios que parecen razonables pero esconden errores típicos que un revisor
-apurado aprueba.
+The app is intentionally simple (catalog, product page, cart, and checkout) so
+the attention stays on the review, not the domain. The `demo/*` branches carry
+changes that look reasonable but hide the kind of bugs a busy reviewer
+approves.
 
-## Qué es Jev
+## What Jev is
 
-Jev es la API de TypeSafe para pedirle a un modelo **decisiones acotadas y
-tipadas** (elegir una opción, dar un puntaje) en lugar de texto libre. Jev
-Review usa esas decisiones como pasos chicos de un pipeline y deja la lógica
-(umbrales, qué se publica, qué bloquea) en código:
+Jev is TypeSafe's API for asking a model for **bounded, typed decisions**
+(pick an option, give a score) instead of free text. Jev Review uses those
+decisions as small steps in a pipeline and keeps the logic (thresholds, what
+gets posted, what blocks a merge) in code:
 
 ```text
-matriz de riesgo
-  -> perfil de cada archivo (Choice + Score)
-  -> selección de evidencia: qué hunk del diff mirar (Choice)
-  -> clasificación del mecanismo del error (Choice)
-  -> severidad (Score)
-  -> ruteo al revisor que corresponde (Choice)
+risk matrix
+  -> profile each file (Choice + Score)
+  -> select evidence: which diff hunk to look at (Choice)
+  -> classify the bug mechanism (Choice)
+  -> severity (Score)
+  -> route to the right reviewer (Choice)
 ```
 
-Por cada archivo cambiado lee el archivo completo y los cambios de los archivos
-relacionados (los que importa o lo importan), así que puede marcar un cambio que
-choca con otro cambio del mismo PR. Revisa correctitud, seguridad,
-confiabilidad, compatibilidad y falta de tests.
+For each changed file it reads the full file plus the changes to related files
+(the ones it imports or that import it), so it can flag a change that conflicts
+with another change in the same pull request. It checks correctness, security,
+reliability, compatibility, and missing tests.
 
-## Cómo se instala la action
+## Installing the action
 
-1. Agregá `.github/workflows/jev-review.yml`:
+1. Add `.github/workflows/jev-review.yml`:
 
    ```yaml
    name: Jev Review
@@ -53,35 +53,37 @@ confiabilidad, compatibilidad y falta de tests.
              typesafe-api-key: ${{ secrets.TYPESAFE_API_KEY }}
    ```
 
-2. Cargá la API key de TypeSafe en **Settings → Secrets and variables →
-   Actions** como `TYPESAFE_API_KEY`.
+2. Add your TypeSafe API key under **Settings → Secrets and variables →
+   Actions** as `TYPESAFE_API_KEY`.
 
-3. Abrí un pull request. La action publica una única review con un comentario
-   por hallazgo.
+3. Open a pull request. The action posts a single review with one comment per
+   finding.
 
-Inputs opcionales: `path` (revisar solo una carpeta) y `fail-on-blocking: "true"`
-(hace fallar el job cuando un hallazgo pide cambios; combinado con una regla de
-protección de rama, bloquea el merge).
+Optional inputs: `path` (review only one folder) and `fail-on-blocking: "true"`
+(fails the job when a finding requests changes; combined with a branch
+protection rule, it blocks the merge).
 
-Los PRs que vienen de forks no reciben secrets, así que ahí la revisión no corre:
-pusheá ramas al mismo repo.
+Pull requests from forks don't receive secrets, so the review doesn't run on
+them: push branches to the same repository.
 
-## Los PRs de la demo
+## Demo pull requests
 
-Cada rama sale de `main` con un solo commit. Los títulos y descripciones para
-abrir cada PR están en [`demo/PRS.md`](demo/PRS.md).
+Each branch is `main` plus a single commit. The title and description used to
+open each pull request are in [`demo/PRS.md`](demo/PRS.md).
 
-| Rama | El PR dice… | Lo que debería marcar Jev |
+| Branch | Pull request | What Jev should flag |
 | --- | --- | --- |
-| `demo/security` | Reseñas con formato | El texto de las reseñas (escrito por clientes) se inyecta como HTML → XSS |
-| `demo/server-action` | El checkout respeta el precio del carrito | La Server Action cobra el precio que manda el navegador → cualquiera paga lo que quiere |
-| `demo/correctness` | Envío gratis desde $50.000 | Usa `>` en vez de `>=`: con $50.000 justos cobra el envío, y el aviso del carrito dice lo contrario |
-| `demo/cross-file` | `formatPrice` pasa a recibir centavos | `PriceTag` también cambió pero sigue mandando pesos → el catálogo muestra precios 100 veces más chicos |
-| `demo/test-gap` | Cupones de descuento | Lógica nueva de descuentos sin ningún test |
-| `demo/clean` | Mejorar textos | Solo textos: no debería comentar nada |
+| `demo/security` | Show reviews with basic formatting | Review text (written by customers) is injected as HTML → XSS |
+| `demo/server-action` | Charge the price the customer saw when adding to the cart | The Server Action charges the price the browser sends → anyone can pay whatever they want |
+| `demo/correctness` | Free shipping on orders from $50.000 | Uses `>` instead of `>=`: at exactly $50.000 shipping is charged, while the cart notice says it's free |
+| `demo/cross-file` | `formatPrice` takes cents | `PriceTag` also changed but still passes pesos → the catalog shows prices 100 times smaller |
+| `demo/test-gap` | Add discount coupons | New discount logic with no tests |
+| `demo/clean` | Polish catalog and cart copy | Copy only: should post no comments |
 
-Para mostrar que no repite comentarios, después de que corra la review en
-`demo/security` pusheá un commit vacío:
+Every branch passes typecheck, tests, and build. The bugs are still there.
+
+To show that it doesn't repeat itself, once the review has run on
+`demo/security`, push an empty commit:
 
 ```bash
 git switch demo/security
@@ -89,27 +91,27 @@ git commit --allow-empty -m "Retrigger review"
 git push
 ```
 
-La action vuelve a correr y no comenta otra vez las líneas que ya comentó.
+The action runs again and doesn't comment on lines it already commented on.
 
-## Regenerar las ramas
+## Recreating the branches
 
-Las ramas se crean desde los parches en `demo/patches/`:
+The branches are built from the patches in `demo/patches/`:
 
 ```bash
-scripts/demo-branches.sh          # crea las ramas demo/* sobre main
-scripts/demo-branches.sh --push   # además las pushea a origin (con --force)
+scripts/demo-branches.sh          # creates the demo/* branches on top of main
+scripts/demo-branches.sh --push   # also force-pushes them to origin
 ```
 
-Si ya abriste los PRs y querés repetir la demo, cerralos, corré el script con
-`--push` y abrilos de nuevo.
+To run the demo again after opening the pull requests, close them, run the
+script with `--push`, and open them again.
 
-## Correr la app
+## Running the app
 
-Requiere Node.js 24+.
+Requires Node.js 24+.
 
 ```bash
 npm install
 npm run dev        # http://localhost:3000
-npm test           # tests de lib/
+npm test           # tests for lib/
 npm run typecheck
 ```

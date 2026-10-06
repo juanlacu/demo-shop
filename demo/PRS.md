@@ -1,7 +1,8 @@
-# Pull requests de la demo
+# Demo pull requests
 
-Títulos y descripciones para abrir cada PR desde su rama hacia `main`. Están
-escritos como los escribiría un compañero: no mencionan el error.
+Title and description for each pull request from its branch into `main`.
+They're written the way a teammate would write them: they don't mention the
+bug.
 
 ## `demo/security`
 
