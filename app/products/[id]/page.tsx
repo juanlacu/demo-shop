@@ -18,7 +18,7 @@ export default async function ProductPage({ params }: Props) {
       <h1>{product.name}</h1>
       <p className="muted">{product.description}</p>
       <p>
-        <PriceTag amount={product.price} />
+        <PriceTag amount={product.price} compareAt={product.listPrice} />
       </p>
       <AddToCartButton productId={product.id} />
 

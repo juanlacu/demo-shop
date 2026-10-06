@@ -13,6 +13,8 @@ export type Product = {
   emoji: string;
   description: string;
   price: number;
+  // Previous price, shown crossed out when the product is on sale.
+  listPrice?: number;
   reviews: Review[];
 };
 
@@ -42,6 +44,7 @@ const PRODUCTS: Product[] = [
     emoji: "🫖",
     description: "Mantiene el agua caliente 24 horas. Pico cebador incluido.",
     price: 42_000,
+    listPrice: 48_000,
     reviews: [
       { author: "Diego", rating: 5, text: "Lo uso todos los días, impecable." },
       { author: "Carla", rating: 3, text: "Bueno, pero la tapa cierra un poco dura." },

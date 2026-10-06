@@ -32,7 +32,7 @@ export default function CartPage() {
       <div className="notice">
         <h1>¡Gracias por tu compra!</h1>
         <p>
-          Pedido <strong>#{result.orderId}</strong> por {formatPrice(result.total)}.
+          Pedido <strong>#{result.orderId}</strong> por {formatPrice(result.total * 100)}.
         </p>
         <Link href="/">Seguir comprando</Link>
       </div>
@@ -67,7 +67,7 @@ export default function CartPage() {
                   Quitar
                 </button>
               </span>
-              <span>{formatPrice(product.price * line.quantity)}</span>
+              <span>{formatPrice(product.price * line.quantity * 100)}</span>
             </li>
           );
         })}
@@ -76,15 +76,15 @@ export default function CartPage() {
       <div className="totals">
         <div>
           <span>Subtotal</span>
-          <span>{formatPrice(totals.subtotal)}</span>
+          <span>{formatPrice(totals.subtotal * 100)}</span>
         </div>
         <div>
           <span>Envío</span>
-          <span>{totals.shipping === 0 ? "Gratis" : formatPrice(totals.shipping)}</span>
+          <span>{totals.shipping === 0 ? "Gratis" : formatPrice(totals.shipping * 100)}</span>
         </div>
         <div className="total">
           <span>Total</span>
-          <span>{formatPrice(totals.total)}</span>
+          <span>{formatPrice(totals.total * 100)}</span>
         </div>
       </div>
 

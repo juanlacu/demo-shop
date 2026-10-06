@@ -31,6 +31,7 @@ const PESOS = new Intl.NumberFormat("es-AR", {
   maximumFractionDigits: 0,
 });
 
-export function formatPrice(amount: number): string {
-  return PESOS.format(amount);
+// Takes cents, like the payments API.
+export function formatPrice(cents: number): string {
+  return PESOS.format(cents / 100);
 }
