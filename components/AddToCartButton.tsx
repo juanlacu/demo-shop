@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { addToCart } from "@/lib/cart";
 
-export function AddToCartButton({ productId }: { productId: string }) {
+export function AddToCartButton({ productId, price }: { productId: string; price: number }) {
   const [added, setAdded] = useState(false);
 
   return (
     <button
       className="primary"
       onClick={() => {
-        addToCart(productId);
+        addToCart(productId, price);
         setAdded(true);
       }}
     >
