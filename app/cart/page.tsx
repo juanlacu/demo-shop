@@ -4,11 +4,12 @@ import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { checkout, type CheckoutResult } from "@/app/checkout/actions";
 import { CART_EVENT, clearCart, readCart, removeFromCart } from "@/lib/cart";
-import { formatPrice, quote, type CartLine } from "@/lib/pricing";
+import { formatPrice, isValidCoupon, quote, type CartLine } from "@/lib/pricing";
 import { getProduct } from "@/lib/products";
 
 export default function CartPage() {
   const [lines, setLines] = useState<CartLine[]>([]);
+  const [coupon, setCoupon] = useState("");
   const [result, setResult] = useState<CheckoutResult | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -21,7 +22,7 @@ export default function CartPage() {
 
   function confirm() {
     startTransition(async () => {
-      const outcome = await checkout(lines);
+      const outcome = await checkout(lines, coupon);
       setResult(outcome);
       if (outcome.ok) clearCart();
     });
@@ -50,7 +51,8 @@ export default function CartPage() {
     );
   }
 
-  const totals = quote(lines);
+  const totals = quote(lines, coupon);
+  const invalidCoupon = coupon.trim() !== "" && !isValidCoupon(coupon);
 
   return (
     <>
@@ -73,11 +75,27 @@ export default function CartPage() {
         })}
       </ul>
 
+      <div className="search">
+        <input
+          value={coupon}
+          onChange={(event) => setCoupon(event.target.value)}
+          placeholder="Cupón de descuento"
+          aria-label="Cupón de descuento"
+        />
+      </div>
+      {invalidCoupon && <p className="error">Ese cupón no existe.</p>}
+
       <div className="totals">
         <div>
           <span>Subtotal</span>
           <span>{formatPrice(totals.subtotal)}</span>
         </div>
+        {totals.discount > 0 && (
+          <div>
+            <span>Descuento</span>
+            <span>−{formatPrice(totals.discount)}</span>
+          </div>
+        )}
         <div>
           <span>Envío</span>
           <span>{totals.shipping === 0 ? "Gratis" : formatPrice(totals.shipping)}</span>

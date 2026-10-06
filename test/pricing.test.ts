@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { SHIPPING_COST, formatPrice, quote } from "../lib/pricing.ts";
 
 test("an empty cart costs nothing", () => {
-  assert.deepEqual(quote([]), { subtotal: 0, shipping: 0, total: 0 });
+  assert.deepEqual(quote([]), { subtotal: 0, discount: 0, shipping: 0, total: 0 });
 });
 
 test("quotes catalog prices times quantity plus shipping", () => {
