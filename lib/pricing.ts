@@ -3,6 +3,8 @@
 import { getProduct } from "./products.ts";
 
 export const SHIPPING_COST = 4_500;
+// Promo: free shipping on orders from $50.000.
+export const FREE_SHIPPING_FROM = 50_000;
 
 export type CartLine = {
   productId: string;
@@ -21,7 +23,7 @@ export function quote(lines: CartLine[]): Quote {
     if (!product) throw new Error(`Unknown product: ${line.productId}`);
     return sum + product.price * line.quantity;
   }, 0);
-  const shipping = subtotal === 0 ? 0 : SHIPPING_COST;
+  const shipping = subtotal === 0 || subtotal > FREE_SHIPPING_FROM ? 0 : SHIPPING_COST;
   return { subtotal, shipping, total: subtotal + shipping };
 }
 

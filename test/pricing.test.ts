@@ -16,6 +16,12 @@ test("quotes catalog prices times quantity plus shipping", () => {
   assert.equal(result.total, result.subtotal + SHIPPING_COST);
 });
 
+test("shipping is free on large orders", () => {
+  const result = quote([{ productId: "termo-acero", quantity: 2 }]);
+  assert.equal(result.shipping, 0);
+  assert.equal(result.total, 84_000);
+});
+
 test("rejects products that are not in the catalog", () => {
   assert.throws(() => quote([{ productId: "nope", quantity: 1 }]), /Unknown product/);
 });

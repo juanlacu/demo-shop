@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { checkout, type CheckoutResult } from "@/app/checkout/actions";
 import { CART_EVENT, clearCart, readCart, removeFromCart } from "@/lib/cart";
-import { formatPrice, quote, type CartLine } from "@/lib/pricing";
+import { FREE_SHIPPING_FROM, formatPrice, quote, type CartLine } from "@/lib/pricing";
 import { getProduct } from "@/lib/products";
 
 export default function CartPage() {
@@ -72,6 +72,14 @@ export default function CartPage() {
           );
         })}
       </ul>
+
+      {totals.subtotal < FREE_SHIPPING_FROM ? (
+        <p className="notice">
+          Te faltan {formatPrice(FREE_SHIPPING_FROM - totals.subtotal)} para el envío gratis.
+        </p>
+      ) : (
+        <p className="notice">¡Tu compra tiene envío gratis!</p>
+      )}
 
       <div className="totals">
         <div>
