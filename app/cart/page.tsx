@@ -67,7 +67,7 @@ export default function CartPage() {
                   Quitar
                 </button>
               </span>
-              <span>{formatPrice(product.price * line.quantity)}</span>
+              <span>{formatPrice(line.price * line.quantity)}</span>
             </li>
           );
         })}

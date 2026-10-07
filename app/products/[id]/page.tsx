@@ -20,7 +20,7 @@ export default async function ProductPage({ params }: Props) {
       <p>
         <PriceTag amount={product.price} />
       </p>
-      <AddToCartButton productId={product.id} />
+      <AddToCartButton productId={product.id} price={product.price} />
 
       <h2>Reseñas</h2>
       {product.reviews.length === 0 ? (

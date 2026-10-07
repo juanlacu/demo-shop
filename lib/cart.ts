@@ -1,5 +1,5 @@
-// Browser-side cart persisted in localStorage. Only product ids and
-// quantities are stored; prices are looked up when the cart is quoted.
+// Browser-side cart persisted in localStorage. Each line keeps the price the
+// customer saw when adding the product.
 import type { CartLine } from "./pricing.ts";
 
 const STORAGE_KEY = "demo-shop-cart";
@@ -19,11 +19,11 @@ function writeCart(lines: CartLine[]): void {
   window.dispatchEvent(new Event(CART_EVENT));
 }
 
-export function addToCart(productId: string): void {
+export function addToCart(productId: string, price: number): void {
   const lines = readCart();
   const line = lines.find((item) => item.productId === productId);
   if (line) line.quantity += 1;
-  else lines.push({ productId, quantity: 1 });
+  else lines.push({ productId, quantity: 1, price });
   writeCart(lines);
 }
 
