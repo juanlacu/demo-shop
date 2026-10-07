@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { PriceTag } from "@/components/PriceTag";
 import { getProduct } from "@/lib/products";
+import { formatReview } from "@/lib/review-format";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -30,7 +31,7 @@ export default async function ProductPage({ params }: Props) {
           {product.reviews.map((review, index) => (
             <li key={index}>
               <strong>{review.author}</strong> · {"★".repeat(review.rating)}
-              <p>{review.text}</p>
+              <p dangerouslySetInnerHTML={{ __html: formatReview(review.text) }} />
             </li>
           ))}
         </ul>
